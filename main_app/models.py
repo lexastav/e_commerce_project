@@ -1,9 +1,13 @@
+import sys
 from PIL import Image
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.core.files.uploadedfile import InMemoryUploadedFile
+
+from io import BytesIO
 
 USER = get_user_model()
 
@@ -87,20 +91,30 @@ class Product(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
+        # image = self.image
+        # img = Image.open(image)
+        # min_height, min_width = self.MIN_VALID_RESOLUTION
+        # max_height, max_width = self.MAX_VALID_RESOLUTION
+        #
+        # if img.height < min_height or img.width < min_width:
+        #     raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
+        #
+        # if img.height > max_height or img.width > max_width:
+        #     raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально
+        #     допустимого')
         image = self.image
         img = Image.open(image)
-        min_height, min_width = self.MIN_VALID_RESOLUTION
-        max_height, max_width = self.MAX_VALID_RESOLUTION
+        new_img = img.convert('RGB')
+        resize_new_img = new_img.resize((720, 344), Image.ANTIALIAS)
+        filestream = BytesIO()
+        resize_new_img.save(filestream, 'JPEG', quality=90)
+        filestream.seek(0)
+        name = f'{self.image.name.split(".")}.jpg'
+        self.image = InMemoryUploadedFile(
+            filestream, 'ImageField', name, 'jpeg/image', sys.getsizeof(filestream), None
+        )
 
-        if img.height < min_height or img.width < min_width:
-            raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
-
-        if img.height > max_height or img.width > max_width:
-            raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально допустимого')
-
-        return image
-
-
+        super().save(*args, **kwargs)
 
 
 class Notebook(Product):

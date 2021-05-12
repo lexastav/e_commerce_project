@@ -13,25 +13,25 @@ class NotebookAdminForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['image'].help_text = mark_safe(
-            f'<span style="color:green;">Загружайте приложения с минимальным разрешением </span>'
-            f'<span style="color:green;">{Product.MIN_VALID_RESOLUTION[0]} x {Product.MIN_VALID_RESOLUTION[1]} </span>'
+            f'<span style="color:green;">Изображение будет обрезано если оно будет больше </span>'
+            f'<span style="color:green;">{Product.MAX_VALID_RESOLUTION[0]} x {Product.MAX_VALID_RESOLUTION[1]} </span>'
         )
 
-    def clean_image(self):
-        image = self.cleaned_data['image']
-        img = Image.open(image)
-        min_height, min_width = Product.MIN_VALID_RESOLUTION
-        max_height, max_width = Product.MAX_VALID_RESOLUTION
-
-        if image.size > Product.MAX_IMAGE_SIZE:
-            raise ValidationError('Размер файла не должен превышать 3MB')
-        if img.height < min_height or img.width < min_width:
-            raise ValidationError('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
-
-        if img.height > max_height or img.width > max_width:
-            raise ValidationError('Загружаемое изображение имеет разрешение больше максимально допустимого')
-
-        return image
+    # def clean_image(self):
+    #     image = self.cleaned_data['image']
+    #     img = Image.open(image)
+    #     min_height, min_width = Product.MIN_VALID_RESOLUTION
+    #     max_height, max_width = Product.MAX_VALID_RESOLUTION
+    #
+    #     if image.size > Product.MAX_IMAGE_SIZE:
+    #         raise ValidationError('Размер файла не должен превышать 3MB')
+    #     if img.height < min_height or img.width < min_width:
+    #         raise ValidationError('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
+    #
+    #     if img.height > max_height or img.width > max_width:
+    #         raise ValidationError('Загружаемое изображение имеет разрешение больше максимально допустимого')
+    #
+    #     return image
 
 
 class NotebookAdmin(admin.ModelAdmin):
