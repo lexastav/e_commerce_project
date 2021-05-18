@@ -5,11 +5,17 @@ from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.urls import reverse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from io import BytesIO
 
 USER = get_user_model()
+
+
+def get_product_url(obj, view_name):
+    ct_model = obj.__class__.meta.model_name
+    return reverse(view_name, kwargs={'ct_model': ct_model, 'slug': obj.slug})
 
 
 class MinResolutionErrorException(Exception):
@@ -70,7 +76,7 @@ class Product(models.Model):
     """Сам продукт"""
 
     MIN_VALID_RESOLUTION = (400, 400)
-    MAX_VALID_RESOLUTION = (800, 800)
+    MAX_VALID_RESOLUTION = (2000, 2000)
     MAX_IMAGE_SIZE = 3145728
 
     class Meta:
@@ -91,28 +97,27 @@ class Product(models.Model):
         return self.title
 
     def save(self, *args, **kwargs):
-        # image = self.image
-        # img = Image.open(image)
-        # min_height, min_width = self.MIN_VALID_RESOLUTION
-        # max_height, max_width = self.MAX_VALID_RESOLUTION
-        #
-        # if img.height < min_height or img.width < min_width:
-        #     raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
-        #
-        # if img.height > max_height or img.width > max_width:
-        #     raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально
-        #     допустимого')
         image = self.image
         img = Image.open(image)
-        new_img = img.convert('RGB')
-        resize_new_img = new_img.resize((720, 344), Image.ANTIALIAS)
-        filestream = BytesIO()
-        resize_new_img.save(filestream, 'JPEG', quality=90)
-        filestream.seek(0)
-        name = f'{self.image.name.split(".")}.jpg'
-        self.image = InMemoryUploadedFile(
-            filestream, 'ImageField', name, 'jpeg/image', sys.getsizeof(filestream), None
-        )
+        min_height, min_width = self.MIN_VALID_RESOLUTION
+        max_height, max_width = self.MAX_VALID_RESOLUTION
+
+        if img.height < min_height or img.width < min_width:
+            raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
+
+        if img.height > max_height or img.width > max_width:
+            raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально допустимого')
+        # image = self.image
+        # img = Image.open(image)
+        # new_img = img.convert('RGB')
+        # resize_new_img = new_img.resize((720, 344), Image.ANTIALIAS)
+        # filestream = BytesIO()
+        # resize_new_img.save(filestream, 'JPEG', quality=90)
+        # filestream.seek(0)
+        # name = f'{self.image.name.split(".")}.jpg'
+        # self.image = InMemoryUploadedFile(
+        #     filestream, 'ImageField', name, 'jpeg/image', sys.getsizeof(filestream), None
+        # )
 
         super().save(*args, **kwargs)
 
@@ -129,6 +134,9 @@ class Notebook(Product):
     def __str__(self):
         return f'{self.category.title} : {self.title}'
 
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
+
 
 class Smartphone(Product):
     display_type = models.CharField(max_length=100, verbose_name='Тип экрана')
@@ -144,6 +152,9 @@ class Smartphone(Product):
 
     def __str__(self):
         return f'{self.category.title} : {self.title}'
+
+    def get_absolute_url(self):
+        return get_product_url(self, 'product_detail')
 
 
 class CartProduct(models.Model):
@@ -174,6 +185,9 @@ class Cart(models.Model):
 
     total_products = models.PositiveIntegerField(default=0)
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Всего к оплате')
+    in_order = models.BooleanField(default=False)
+    for_anonymous_user = models.BooleanField(default=False)
+
 
     def __str__(self):
         return str(self.id)
