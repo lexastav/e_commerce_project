@@ -75,7 +75,7 @@ class Category(models.Model):
 class Product(models.Model):
     """Сам продукт"""
 
-    MIN_VALID_RESOLUTION = (400, 400)
+    MIN_VALID_RESOLUTION = (200, 200)
     MAX_VALID_RESOLUTION = (2000, 2000)
     MAX_IMAGE_SIZE = 3145728
 
@@ -144,8 +144,11 @@ class Smartphone(Product):
     resolution_display = models.CharField(max_length=100, verbose_name='Разрешение экрана')
     cpu_freq = models.CharField(max_length=100, verbose_name='Частота процессора')
     ram = models.CharField(max_length=100, verbose_name='Оперативная память')
-    sd_card = models.BooleanField(default=True)
-    sd_volume_max = models.CharField(max_length=100, verbose_name='Встроенная память')
+    sd_card = models.BooleanField(default=True, verbose_name='Поддержка карты памяти')
+    sd_volume_max = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name='Максимальный объем карты памяти'
+    )
+    built_in_memory = models.CharField(max_length=100, verbose_name='Встроенная память')
     main_cam_mp = models.CharField(max_length=100, verbose_name='Основная камера')
     front_cam_mp = models.CharField(max_length=100, verbose_name='Фронтальная камера')
     battery_capacity = models.CharField(max_length=100, verbose_name='Емкость батареи')
@@ -172,7 +175,7 @@ class CartProduct(models.Model):
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Всего к оплате')
 
     def __str__(self):
-        return f'Product: {self.product.title} для корзины'
+        return f'Product: {self.content_object.title} для корзины'
 
 
 class Cart(models.Model):
@@ -187,7 +190,6 @@ class Cart(models.Model):
     total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Всего к оплате')
     in_order = models.BooleanField(default=False)
     for_anonymous_user = models.BooleanField(default=False)
-
 
     def __str__(self):
         return str(self.id)
