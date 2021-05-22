@@ -124,6 +124,9 @@ class Product(models.Model):
     def __str__(self):
         return self.title
 
+    def get_model_name(self):
+        return self.__class__.__name__.lower()
+
     def save(self, *args, **kwargs):
         image = self.image
         img = Image.open(image)
@@ -148,6 +151,8 @@ class Product(models.Model):
         # )
 
         super().save(*args, **kwargs)
+
+
 
 
 class Notebook(Product):
@@ -187,6 +192,7 @@ class Smartphone(Product):
     def get_absolute_url(self):
         return get_product_url(self, 'product_detail')
 
+
     # @property
     # def sd_card(self):
     #     if self.sd_card:
@@ -211,29 +217,42 @@ class CartProduct(models.Model):
     def __str__(self):
         return f'Product: {self.content_object.title} для корзины'
 
+    def save(self, *args, **kwargs):
+        self.total_price = self.quantity * self.content_object.price
+        super().save(*args, **kwargs)
+
 
 class Cart(models.Model):
     """Сама модель корзины"""
-    owner = models.ForeignKey('Customer', verbose_name='Владелец', on_delete=models.CASCADE)
+    owner = models.ForeignKey('Customer', null=True, verbose_name='Владелец', on_delete=models.CASCADE)
     products = models.ManyToManyField(CartProduct, blank=True, related_name='related_cart')
     # связь многие к многим к нашей модели CartProduct
     # так же зададим related_name дабы различать поля в базе и можно было получать query сеты, например
     # "cartproduct".related_cart.all() выдаст нам сет со всеми корзинами содержащими нужный нам продукт
 
     total_products = models.PositiveIntegerField(default=0)
-    total_price = models.DecimalField(max_digits=9, decimal_places=2, verbose_name='Всего к оплате')
+    total_price = models.DecimalField(max_digits=9, default=0, decimal_places=2, verbose_name='Всего к оплате')
     in_order = models.BooleanField(default=False)
     for_anonymous_user = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.id)
 
+    def save(self, *args, **kwargs):
+        cart_data = self.products.aggregate(models.Sum('total_price'), models.Count('id'))
+        if cart_data.get('total_price__sum'):
+            self.total_price = cart_data['total_price__sum']
+        else:
+            self.total_price = 0
+        self.total_products = cart_data['id__count']
+        super().save(*args, **kwargs)
+
 
 class Customer(models.Model):
     """Модель пользователя"""
     user = models.ForeignKey(USER, verbose_name='Пользователь', on_delete=models.CASCADE)
-    phone_number = models.CharField(max_length=11, verbose_name='Номер телефона')
-    address = models.CharField(max_length=250, verbose_name='Адрес')
+    phone_number = models.CharField(max_length=11, verbose_name='Номер телефона', null=True, blank=True)
+    address = models.CharField(max_length=250, verbose_name='Адрес', null=True, blank=True)
 
     def __str__(self):
         return f'Покупатель: {self.user.first_name}, {self.user.last_name}'
