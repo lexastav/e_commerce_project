@@ -23,17 +23,6 @@
         <p>{{ product.description }}</p>
         <hr>
         <a href="{% url 'add_to_cart' ct_model=ct_model slug=product.slug %}"><button class="btn btn-warning">Добавить в корзину</button></a>
-        <p class="mt-4"><big>Характеристики:</big></p>
-
-        {{ product|product_spec }}
-
-{#        {% if product.category.slug == 'notebooks'%}#}
-{#            {% include 'notebook_specification.html' %}#}
-{#        {% elif product.category.slug == 'smartphones'%}#}
-{#            {% include 'smartphone_specification.html' %}#}
-{##}
-{#        {% endif %}#}
-
     </div>
 
 </div>
