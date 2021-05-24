@@ -5,8 +5,9 @@
     {% if messages %}
         {% for message in messages %}
             <div class="alert alert-success alert-dismissible fade show" role="alert">
-              <strong>{{ message }}</strong>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <strong>{{ message }}</strong>
+                <button type="button" class="btn-close" data-dismiss="alert" aria-label="Close">
+                </button>
             </div>
         {% endfor %}
     {% endif %}
@@ -46,7 +47,7 @@
              <td>Итого:</td>
              <td>{{ cart.total_products }}</td>
              <td><strong>{{ cart.total_price }} руб.</strong></td>
-
+             <td><a href="{% url 'checkout' %}"><button class="btn btn-primary">Перейти к офорлению</button></a></td>
           </tr>
 
   </tbody>

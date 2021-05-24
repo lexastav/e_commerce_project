@@ -106,8 +106,8 @@ class Product(models.Model):
     """Сам продукт"""
 
     MIN_VALID_RESOLUTION = (200, 200)
-    MAX_VALID_RESOLUTION = (2000, 2000)
-    MAX_IMAGE_SIZE = 3145728
+    MAX_VALID_RESOLUTION = (20000, 20000)
+    MAX_IMAGE_SIZE = 31457280
 
     class Meta:
         abstract = True
@@ -130,16 +130,16 @@ class Product(models.Model):
         return self.__class__.__name__.lower()
 
     def save(self, *args, **kwargs):
-        image = self.image
-        img = Image.open(image)
-        min_height, min_width = self.MIN_VALID_RESOLUTION
-        max_height, max_width = self.MAX_VALID_RESOLUTION
-
-        if img.height < min_height or img.width < min_width:
-            raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
-
-        if img.height > max_height or img.width > max_width:
-            raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально допустимого')
+        # image = self.image
+        # img = Image.open(image)
+        # min_height, min_width = self.MIN_VALID_RESOLUTION
+        # max_height, max_width = self.MAX_VALID_RESOLUTION
+        #
+        # if img.height < min_height or img.width < min_width:
+        #     raise MinResolutionErrorException('Загружаемое изображение имеет разрешение меньше минимльно допустимого')
+        #
+        # if img.height > max_height or img.width > max_width:
+        #     raise MaxResolutionErrorException('Загружаемое изображение имеет разрешение больше максимально допустимого')
         # image = self.image
         # img = Image.open(image)
         # new_img = img.convert('RGB')
@@ -238,15 +238,6 @@ class Cart(models.Model):
     def __str__(self):
         return str(self.id)
 
-    def save(self, *args, **kwargs):
-        cart_data = self.products.aggregate(models.Sum('total_price'), models.Count('id'))
-        if cart_data.get('total_price__sum'):
-            self.total_price = cart_data['total_price__sum']
-        else:
-            self.total_price = 0
-        self.total_products = cart_data['id__count']
-        super().save(*args, **kwargs)
-
 
 class Customer(models.Model):
     """Модель пользователя"""
@@ -282,18 +273,19 @@ class Order(models.Model):
     )
 
     customer = models.ForeignKey(
-        Category, verbose_name='Покупатель', related_name='related_orders', on_delete=models.CASCADE
+        Customer, verbose_name='Покупатель', related_name='related_orders', on_delete=models.CASCADE
     )
     first_name = models.CharField(max_length=150, verbose_name='Имя')
     last_name = models.CharField(max_length=150, verbose_name='Фамилия')
     phone_number = models.CharField(max_length=20, verbose_name='Номер телефона')
+    cart = models.ForeignKey(Cart, verbose_name='Корзина', on_delete=models.CASCADE, null=True, blank=True)
     address = models.CharField(max_length=1000, verbose_name='Адрес', null=True, blank=True)
     status = models.CharField(max_length=100, verbose_name='Статус заказа', choices=STATUS_CHOICES, default=STATUS_NEW)
     buying_type = models.CharField(
         max_length=100, verbose_name='Тип заказа', choices=BUYING_TYPE_CHOICES, default=BUYING_TYPE_SELF
     )
     comment = models.TextField(verbose_name='Комментарий к заказу', null=True, blank=True)
-    created_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now=True, verbose_name='Дата создания заказа')
     order_date = models.DateField(verbose_name='Дата получения заказа', default=timezone.now)
 
     def __str__(self):
