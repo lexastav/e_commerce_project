@@ -44,10 +44,10 @@
                             </li>
                         {% if not request.user.is_authenticated %}
                             <li>
-                                <a class="nav-link text-light" href="#">Авторизация</a>
+                                <a class="nav-link text-light" href="{% url 'login' %}">Авторизация</a>
                             </li>
                             <li>
-                                <a class="nav-link text-light" href="#">Регистрация</a>
+                                <a class="nav-link text-light" href="{% url 'registration' %}">Регистрация</a>
                             </li>
                         {% endif %}
                             <li class="nav-item">
@@ -58,6 +58,7 @@
                                             {{ request.user.username }}
                                         </a>
                                     </span>
+                                    |<a class="nav-link text-light" href="{% url 'logout' %}">Выйти</a>
                                     </span>
                                 {% endif %}
                             </li>
