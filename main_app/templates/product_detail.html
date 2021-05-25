@@ -22,7 +22,9 @@
         <p>Цена: <big><b>{{ product.price }} руб.</b></big></p>
         <p>{{ product.description }}</p>
         <hr>
-        <a href="{% url 'add_to_cart' ct_model=ct_model slug=product.slug %}"><button class="btn btn-warning">Добавить в корзину</button></a>
+        <a href="{% url 'add_to_cart' slug=product.slug %}">
+            <button class="btn btn-warning">Добавить в корзину</button>
+        </a>
     </div>
 
 </div>

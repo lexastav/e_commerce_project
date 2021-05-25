@@ -2,7 +2,6 @@ from django.db import transaction
 from django.shortcuts import render
 from django.views.generic import DetailView, View
 from django.http import HttpResponseRedirect
-from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 
 from .models import Category,  Customer, CartProduct, Product
