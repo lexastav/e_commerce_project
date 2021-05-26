@@ -54,11 +54,12 @@
                                 {% if request.user.is_authenticated %}
                                     <span class="navbar text text-light">
                                     Здравствуйте, <span class="badge">
-                                        <a style="text-decoration: none; color: white; font-size: 14px" href="#">
+                                        <a style="text-decoration: none; color: white; font-size: 14px"
+                                           href="{% url 'profile' %}">
                                             {{ request.user.username }}
                                         </a>
                                     </span>
-                                    |<a class="nav-link text-light" href="{% url 'logout' %}">Выйти</a>
+                                     | <a style="color: white; text-decoration: none" href="{% url 'logout' %}">Выйти</a>
                                     </span>
                                 {% endif %}
                             </li>
