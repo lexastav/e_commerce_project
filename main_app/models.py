@@ -50,7 +50,12 @@ class Product(models.Model):
         return reverse('product_detail', kwargs={'slug': self.slug})
 
 
-# """ Далее классы для описания характеристик: ProductFeatures и ProductFeatureValidators """
+""" 
+Далее классы для описания характеристик: ProductFeatures и ProductFeatureValidators. 
+Идея была в том, что бы из админки определять и прописывать необходимые характеристики для каждого продукта,
+но на практике это не совсем удобно. По этому от такой модели решили отказаться.
+"""
+
 #
 #
 # class ProductFeatures(models.Model):
